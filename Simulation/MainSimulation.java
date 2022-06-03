@@ -6,15 +6,16 @@ public class MainSimulation extends GlobalSimulation{
     public static void main(String[] args) throws IOException {
 		ArrayList meanCustomerList = new ArrayList<Double>();
 
-		for(int i=0; i<100; i++){
-			meanCustomerList.add(runSimulation());
+		for(int i=0; i<1000; i++){
+			meanCustomerList.add(runSimulation(i));
 		}
 
-		writeToCsv(meanCustomerList, "MeanCustomersInQueue.csv");
+		writeToCsv(meanCustomerList, "MeanCustomersInQueue1.csv");
     }
 
-	public static double runSimulation(){
+	public static double runSimulation(int i){
 		time = 0;
+		seed = i;
 		sdMean = 100.0;
 		currentNumberOfCustomers = new ArrayList<Integer>();
 		eventList = new EventListClass();
@@ -25,7 +26,7 @@ public class MainSimulation extends GlobalSimulation{
         insertEvent(MEASURE, 5);
         
         // The main simulation loop
-    	while (sdMean > 0.01){
+    	while (time < 5000){
     		actEvent = eventList.fetchEvent();
     		time = actEvent.eventTime;
     		actState.treatEvent(actEvent);

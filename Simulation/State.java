@@ -34,14 +34,16 @@ class State extends GlobalSimulation{
 	private void arrival(){
 		numberInQueue++;
 		if (numberInQueue <= 2)
-			insertEvent(DEPARTURE, time + 2*slump.nextDouble());
+			insertEvent(DEPARTURE, time + 2.0 - (2.0*slump.nextDouble()));
+			//insertEvent(DEPARTURE, time + (2.0*slump.nextDouble()));
 		insertEvent(ARRIVAL, time + expRnd(1.2));
 	}
 	
 	private void departure(){
 		numberInQueue--;
 		if (numberInQueue > 1)
-			insertEvent(DEPARTURE, time + 2*slump.nextDouble());
+			insertEvent(DEPARTURE, time + 2.0 - (2*slump.nextDouble()));
+			//insertEvent(DEPARTURE, time + (2*slump.nextDouble()));
 	}
 	
 	private void measure(){
@@ -55,7 +57,8 @@ class State extends GlobalSimulation{
 	}
 
 	public double expRnd(double expectedValue) {
-		return (Math.log(slump.nextDouble())/(-1.0/expectedValue));
+		return (Math.log(1.0 - slump.nextDouble())/(-1.0/expectedValue));
+		//return (Math.log(slump.nextDouble())/(-1.0/expectedValue));
 	}
 
 	public static double sd (){
