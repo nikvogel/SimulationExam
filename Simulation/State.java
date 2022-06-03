@@ -7,8 +7,9 @@ class State extends GlobalSimulation{
 	// e.g. for measurements
 	public int numberInQueue = 0, accumulated = 0, noMeasurements = 0;
 
-	Random slump = new Random(); // This is just a random number generator
-	
+	Random rndArrival = new Random(seed); // This is just a random number generator
+	Random rndServer = new Random(seed+1);
+	Random rndMeasure = new Random (seed+2);
 	
 	// The following method is called by the main program each time a new event has been fetched
 	// from the event list in the main loop. 
@@ -34,16 +35,16 @@ class State extends GlobalSimulation{
 	private void arrival(){
 		numberInQueue++;
 		if (numberInQueue <= 2)
-			insertEvent(DEPARTURE, time + 2.0 - (2.0*slump.nextDouble()));
-			//insertEvent(DEPARTURE, time + (2.0*slump.nextDouble()));
-		insertEvent(ARRIVAL, time + expRnd(1.2));
+			//insertEvent(DEPARTURE, time + 2.0 - (2.0*rndServer.nextDouble()));
+			insertEvent(DEPARTURE, time + (2.0*rndServer.nextDouble()));
+		insertEvent(ARRIVAL, time + expRndArrival(1.2));
 	}
 	
 	private void departure(){
 		numberInQueue--;
 		if (numberInQueue > 1)
-			insertEvent(DEPARTURE, time + 2.0 - (2*slump.nextDouble()));
-			//insertEvent(DEPARTURE, time + (2*slump.nextDouble()));
+			//insertEvent(DEPARTURE, time + 2.0 - (2*rndServer.nextDouble()));
+			insertEvent(DEPARTURE, time + (2*rndServer.nextDouble()));
 	}
 	
 	private void measure(){
@@ -53,12 +54,17 @@ class State extends GlobalSimulation{
 		if (currentNumberOfCustomers.size()>10)
 			sdMean = 1.0*sd()/Math.sqrt(noMeasurements);
 			//System.out.println(sdMean);
-		insertEvent(MEASURE, time + expRnd(5));
+		insertEvent(MEASURE, time + expRndMeasure(5));
 	}
 
-	public double expRnd(double expectedValue) {
-		return (Math.log(1.0 - slump.nextDouble())/(-1.0/expectedValue));
-		//return (Math.log(slump.nextDouble())/(-1.0/expectedValue));
+	public double expRndArrival(double expectedValue) {
+		//return (Math.log(1.0 - rndArrival.nextDouble())/(-1.0/expectedValue));
+		return (Math.log(rndArrival.nextDouble())/(-1.0/expectedValue));
+	}
+
+	public double expRndMeasure(double expectedValue) {
+		//return (Math.log(1.0 - rndMeasure.nextDouble())/(-1.0/expectedValue));
+		return (Math.log(rndMeasure.nextDouble())/(-1.0/expectedValue));
 	}
 
 	public static double sd (){
