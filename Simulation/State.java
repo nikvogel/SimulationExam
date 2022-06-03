@@ -17,8 +17,8 @@ class State extends GlobalSimulation{
 			case ARRIVAL:
 				arrival();
 				break;
-			case READY:
-				ready();
+			case DEPARTURE:
+				departure();
 				break;
 			case MEASURE:
 				measure();
@@ -32,21 +32,55 @@ class State extends GlobalSimulation{
 	// things are getting more complicated than this.
 	
 	private void arrival(){
-		if (numberInQueue == 0)
-			insertEvent(READY, time + 2*slump.nextDouble());
 		numberInQueue++;
-		insertEvent(ARRIVAL, time + 2.5*slump.nextDouble());
+		if (numberInQueue <= 2)
+			insertEvent(DEPARTURE, time + 2*slump.nextDouble());
+		insertEvent(ARRIVAL, time + expRnd(1.2));
 	}
 	
-	private void ready(){
+	private void departure(){
 		numberInQueue--;
-		if (numberInQueue > 0)
-			insertEvent(READY, time + 2*slump.nextDouble());
+		if (numberInQueue > 1)
+			insertEvent(DEPARTURE, time + 2*slump.nextDouble());
 	}
 	
 	private void measure(){
 		accumulated = accumulated + numberInQueue;
 		noMeasurements++;
-		insertEvent(MEASURE, time + slump.nextDouble()*10);
+		currentNumberOfCustomers.add(numberInQueue);
+		if (currentNumberOfCustomers.size()>10)
+			sdMean = 1.0*sd()/Math.sqrt(noMeasurements);
+			//System.out.println(sdMean);
+		insertEvent(MEASURE, time + expRnd(5));
 	}
+
+	public double expRnd(double expectedValue) {
+		return (Math.log(slump.nextDouble())/(-1.0/expectedValue));
+	}
+
+	public static double sd (){
+		Double mean = currentNumberOfCustomers
+							.stream()
+							.mapToInt(a -> a)
+							.average()
+							.orElse(-1);
+		double temp = 0;
+		for (int i = 0; i < currentNumberOfCustomers.size(); i++)
+		{
+			int val = currentNumberOfCustomers.get(i);
+
+			// Step 2:
+			double squrDiffToMean = Math.pow(val - mean, 2);
+
+			// Step 3:
+			temp += squrDiffToMean;
+		}
+
+
+		double meanOfDiffs = (double) temp / (double) (currentNumberOfCustomers.size());
+
+
+		return Math.sqrt(meanOfDiffs);
+	}
+
 }

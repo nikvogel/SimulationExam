@@ -1,24 +1,51 @@
 import java.util.*;
 import java.io.*;
 
-
 public class MainSimulation extends GlobalSimulation{
  
     public static void main(String[] args) throws IOException {
-    	Event actEvent;
+		ArrayList meanCustomerList = new ArrayList<Double>();
+
+		for(int i=0; i<100; i++){
+			meanCustomerList.add(runSimulation());
+		}
+
+		writeToCsv(meanCustomerList, "MeanCustomersInQueue.csv");
+    }
+
+	public static double runSimulation(){
+		time = 0;
+		sdMean = 100.0;
+		currentNumberOfCustomers = new ArrayList<Integer>();
+		eventList = new EventListClass();
+		Event actEvent;
     	State actState = new State(); // The state that shoud be used
     	// Some events must be put in the event list at the beginning
         insertEvent(ARRIVAL, 0);  
         insertEvent(MEASURE, 5);
         
         // The main simulation loop
-    	while (time < 5000){
+    	while (sdMean > 0.01){
     		actEvent = eventList.fetchEvent();
     		time = actEvent.eventTime;
     		actState.treatEvent(actEvent);
     	}
     	
     	// Printing the result of the simulation, in this case a mean value
-    	System.out.println(1.0*actState.accumulated/actState.noMeasurements);
-    }
+    	double meanCustomers = 1.0*actState.accumulated/actState.noMeasurements;
+
+		System.out.println("Mean customers: " + meanCustomers);
+		System.out.println("Standard Dev: " + sdMean);
+		System.out.println("Measurements: " + actState.noMeasurements);
+
+		return meanCustomers;
+	}
+
+	public static void writeToCsv(ArrayList list, String filename) throws IOException{
+		FileWriter writer = new FileWriter(filename); 
+		for (Object dd:list)
+			writer.write(dd + System.lineSeparator());
+		writer.close();
+	}
+
 }
