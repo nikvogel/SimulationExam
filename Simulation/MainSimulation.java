@@ -2,18 +2,20 @@ import java.util.*;
 import java.io.*;
 
 public class MainSimulation extends GlobalSimulation{
+	static FileWriter writerMeasurements; 
  
     public static void main(String[] args) throws IOException {
 		ArrayList meanCustomerList = new ArrayList<Double>();
+		writerMeasurements = new FileWriter("Measurements.csv"); 
 
 		for(int i=0; i<100; i++){
 			meanCustomerList.add(runSimulation(i));
 		}
-
+		writerMeasurements.close();
 		writeToCsv(meanCustomerList, "MeanCustomersInQueue0.csv");
     }
 
-	public static double runSimulation(int i){
+	public static double runSimulation(int i) throws IOException{
 		time = 0;
 		seed = i;
 		sdMean = 100.0;
@@ -35,6 +37,8 @@ public class MainSimulation extends GlobalSimulation{
     	// Printing the result of the simulation, in this case a mean value
     	double meanCustomers = 1.0*actState.accumulated/actState.noMeasurements;
 
+		writeMeasurements(currentNumberOfCustomers);
+
 		System.out.println("Mean customers: " + meanCustomers);
 		System.out.println("Standard Dev: " + sdMean);
 		System.out.println("Measurements: " + actState.noMeasurements);
@@ -48,5 +52,11 @@ public class MainSimulation extends GlobalSimulation{
 			writer.write(dd + System.lineSeparator());
 		writer.close();
 	}
+
+	public static void writeMeasurements(ArrayList list) throws IOException{
+		for (Object dd:list)
+			writerMeasurements.write(dd + System.lineSeparator());
+	}
+
 
 }
