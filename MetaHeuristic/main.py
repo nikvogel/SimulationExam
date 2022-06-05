@@ -117,19 +117,22 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
     best_eval = objective(x_best, y_best, z_best, cp, cf, cs)
     # current working solution
     x_curr, y_curr, z_curr, curr_eval = x_best, y_best, z_best, best_eval
+    best_scores = list()
     scores = list()
+    checked_scores = list()
     # run the algorithm
     for i in range(n_iterations):
         # take a step
         x_cand, y_cand, z_cand = neighbor(x_curr, y_curr, z_curr, d, g)
         # evaluate candidate point
         candidate_eval = objective(x_cand, y_cand, z_cand, cp, cf, cs)
+        checked_scores.append(candidate_eval)
         # check for new best solution
         if candidate_eval < best_eval:
             # store new best point
             x_best, y_best, z_best, best_eval = x_cand, y_cand, z_cand, candidate_eval
             # keep track of scores
-            scores.append(best_eval)
+            best_scores.append(best_eval)
             # report progress
             # print('>%d f(%s) = %.5f' % (i, x_best,y_best,z_best, best_eval))
         # difference between candidate and current point evaluation
@@ -142,7 +145,8 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
         if diff < 0 or rand() < metropolis:
             # store the new current point
             x_curr, y_curr, z_curr, curr_eval = x_cand, y_cand, z_cand, candidate_eval
-    return [x_best, y_best, z_best, best_eval, scores]
+        scores.append(curr_eval)
+    return [x_best, y_best, z_best, best_eval, best_scores, scores, checked_scores]
 
 
 # seed the pseudorandom number generator
@@ -163,14 +167,42 @@ d = asarray([6, 7, 4, 6, 3, 8])
 g = 10
 
 # perform the simulated annealing search
-best_x, best_y, best_z, score, scores = simulated_annealing(cp, cf, cs, d, g, n_iterations, temp)
+best_x, best_y, best_z, score, best_scores, scores, checked_scores = simulated_annealing(cp, cf, cs, d, g, n_iterations, temp)
 print('Done!')
 print(f'x:{best_x}, y: {best_y}, z:{best_z}')
 print(f'score: {score}')
 # print('f(%s) = %f' % (best_x, best_y, best_z, score))
 # line plot of best scores
-pyplot.plot(range(len(scores)), scores)
+pyplot.figure()
+pyplot.plot(range(len(best_scores)), best_scores)
 pyplot.xlabel('Improvement Number')
 pyplot.ylabel('Objective Value')
 pyplot.tight_layout()
+pyplot.savefig('BestObjValPlot.png')
+
+# line plot of scores
+pyplot.figure()
+pyplot.plot(range(len(scores)), scores)
+pyplot.xlabel('Iteration')
+pyplot.ylabel('Objective Value')
+pyplot.tight_layout()
 pyplot.savefig('ObjValPlot.png')
+
+# line plot of scores
+pyplot.figure()
+pyplot.plot(range(len(checked_scores)), checked_scores)
+pyplot.xlabel('Iteration')
+pyplot.ylabel('Evaluated Objective Value')
+pyplot.tight_layout()
+pyplot.savefig('CheckedObjValPlot.png')
+
+# plot of solution
+pyplot.figure()
+pyplot.plot(range(1,7), best_x, label='Production')
+pyplot.plot(range(1,7), best_z, label= 'Storage')
+pyplot.plot(range(1,7), d, label = 'Demand')
+pyplot.ylabel('Amount')
+pyplot.xlabel('Period')
+pyplot.legend()
+pyplot.tight_layout()
+pyplot.savefig('PlotSolutionSA.png')
