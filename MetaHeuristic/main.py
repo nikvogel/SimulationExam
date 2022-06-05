@@ -113,13 +113,17 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
     y_best = np.ones(len(d))
     z_best = np.zeros(len(d))
 
-    # evaluate the initial point
-    best_eval = objective(x_best, y_best, z_best, cp, cf, cs)
-    # current working solution
-    x_curr, y_curr, z_curr, curr_eval = x_best, y_best, z_best, best_eval
     best_scores = list()
     scores = list()
     checked_scores = list()
+
+    # evaluate the initial point
+    best_eval = objective(x_best, y_best, z_best, cp, cf, cs)
+    best_scores.append(best_eval)
+    scores.append(best_eval)
+    checked_scores.append(best_eval)
+    # current working solution
+    x_curr, y_curr, z_curr, curr_eval = x_best, y_best, z_best, best_eval
     # run the algorithm
     for i in range(n_iterations):
         # take a step
@@ -133,6 +137,7 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
             x_best, y_best, z_best, best_eval = x_cand, y_cand, z_cand, candidate_eval
             # keep track of scores
             best_scores.append(best_eval)
+            print('Hola!')
             # report progress
             # print('>%d f(%s) = %.5f' % (i, x_best,y_best,z_best, best_eval))
         # difference between candidate and current point evaluation
