@@ -116,6 +116,7 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
     best_scores = list()
     scores = list()
     checked_scores = list()
+    checked_x = list()
 
     # evaluate the initial point
     best_eval = objective(x_best, y_best, z_best, cp, cf, cs)
@@ -124,10 +125,12 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
     checked_scores.append(best_eval)
     # current working solution
     x_curr, y_curr, z_curr, curr_eval = x_best, y_best, z_best, best_eval
+    checked_x.append(x_curr)
     # run the algorithm
     for i in range(n_iterations):
         # take a step
         x_cand, y_cand, z_cand = neighbor(x_curr, y_curr, z_curr, d, g)
+        checked_x.append(x_cand)
         # evaluate candidate point
         candidate_eval = objective(x_cand, y_cand, z_cand, cp, cf, cs)
         checked_scores.append(candidate_eval)
@@ -151,7 +154,7 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
             # store the new current point
             x_curr, y_curr, z_curr, curr_eval = x_cand, y_cand, z_cand, candidate_eval
         scores.append(curr_eval)
-    return [x_best, y_best, z_best, best_eval, best_scores, scores, checked_scores]
+    return [x_best, y_best, z_best, best_eval, best_scores, scores, checked_scores, checked_x]
 
 
 # seed the pseudorandom number generator
@@ -172,11 +175,12 @@ d = asarray([6, 7, 4, 6, 3, 8])
 g = 10
 
 # perform the simulated annealing search
-best_x, best_y, best_z, score, best_scores, scores, checked_scores = simulated_annealing(cp, cf, cs, d, g, n_iterations, temp)
+best_x, best_y, best_z, score, best_scores, scores, checked_scores, checked_x = simulated_annealing(cp, cf, cs, d, g, n_iterations, temp)
 print('Done!')
 print(f'x:{best_x}, y: {best_y}, z:{best_z}')
 print(f'score: {score}')
 # print('f(%s) = %f' % (best_x, best_y, best_z, score))
+
 # line plot of best scores
 pyplot.figure()
 pyplot.plot(range(len(best_scores)), best_scores)
@@ -185,7 +189,7 @@ pyplot.ylabel('Objective Value')
 pyplot.tight_layout()
 pyplot.savefig('BestObjValPlot.png')
 
-# line plot of scores
+# line plot of current scores
 pyplot.figure()
 pyplot.plot(range(len(scores)), scores)
 pyplot.xlabel('Iteration')
@@ -193,13 +197,22 @@ pyplot.ylabel('Objective Value')
 pyplot.tight_layout()
 pyplot.savefig('ObjValPlot.png')
 
-# line plot of scores
+# line plot of checked scores
 pyplot.figure()
 pyplot.plot(range(len(checked_scores)), checked_scores)
 pyplot.xlabel('Iteration')
 pyplot.ylabel('Evaluated Objective Value')
 pyplot.tight_layout()
 pyplot.savefig('CheckedObjValPlot.png')
+
+# line plot of checked x
+pyplot.figure()
+pyplot.plot(range(30), checked_x[:30], label = ['x1','x2','x3','x4','x5','x6'])
+pyplot.xlabel('Iteration')
+pyplot.ylabel('X Values')
+pyplot.legend()
+pyplot.tight_layout()
+pyplot.savefig('CheckedXPlot.png')
 
 # plot of solution
 pyplot.figure()
