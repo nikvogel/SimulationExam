@@ -1,7 +1,7 @@
 
 public class EventListClass {
 	
-	private Event list, last; // Used to build a linked list
+	private Event list, last; 
 	
 	EventListClass(){
 		list = new Event();
@@ -9,8 +9,6 @@ public class EventListClass {
     	list.next = last;
 	}
 	
-	// The method insertEvent creates a new event, and searches the list of events for the 
-	// right place to put the new event.
 	
 	public void InsertEvent(int type, double TimeOfEvent){
  	Event dummy, predummy;
@@ -26,11 +24,6 @@ public class EventListClass {
  	predummy.next = newEvent;
  	newEvent.next = dummy;
  }
-	
-	
-	
-	// The following method removes and returns the first event in the list. That is the
-	// event with the smallest time stamp, i.e. the next thing that shall take place.
 	
 	public Event fetchEvent(){
 		Event dummy;

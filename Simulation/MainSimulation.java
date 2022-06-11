@@ -22,19 +22,17 @@ public class MainSimulation extends GlobalSimulation{
 		currentNumberOfCustomers = new ArrayList<Integer>();
 		eventList = new EventListClass();
 		Event actEvent;
-    	State actState = new State(); // The state that shoud be used
-    	// Some events must be put in the event list at the beginning
+    	State actState = new State(); 
         insertEvent(ARRIVAL, 0);  
         insertEvent(MEASURE, 5);
         
-        // The main simulation loop
+        
     	while (sdMean > 0.01){
     		actEvent = eventList.fetchEvent();
     		time = actEvent.eventTime;
     		actState.treatEvent(actEvent);
     	}
     	
-    	// Printing the result of the simulation, in this case a mean value
     	double meanCustomers = 1.0*actState.accumulated/actState.noMeasurements;
 
 		writeMeasurements(currentNumberOfCustomers);

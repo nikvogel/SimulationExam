@@ -3,16 +3,12 @@ import java.io.*;
 
 class State extends GlobalSimulation{
 	
-	// Here follows the state variables and other variables that might be needed
-	// e.g. for measurements
 	public int numberInQueue = 0, accumulated = 0, noMeasurements = 0;
 
-	Random rndArrival = new Random(seed); // This is just a random number generator
+	Random rndArrival = new Random(seed); 
 	Random rndServer = new Random(seed+1);
 	Random rndMeasure = new Random (seed+2);
 	
-	// The following method is called by the main program each time a new event has been fetched
-	// from the event list in the main loop. 
 	public void treatEvent(Event x){
 		switch (x.eventType){
 			case ARRIVAL:
@@ -26,11 +22,6 @@ class State extends GlobalSimulation{
 				break;
 		}
 	}
-	
-	
-	// The following methods defines what should be done when an event takes place. This could
-	// have been placed in the case in treatEvent, but often it is simpler to write a method if 
-	// things are getting more complicated than this.
 	
 	private void arrival(){
 		numberInQueue++;
@@ -77,11 +68,7 @@ class State extends GlobalSimulation{
 		for (int i = 0; i < currentNumberOfCustomers.size(); i++)
 		{
 			int val = currentNumberOfCustomers.get(i);
-
-			// Step 2:
 			double squrDiffToMean = Math.pow(val - mean, 2);
-
-			// Step 3:
 			temp += squrDiffToMean;
 		}
 
