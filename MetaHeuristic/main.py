@@ -6,6 +6,7 @@ from numpy.random import randint
 from numpy.random import seed
 from matplotlib import pyplot
 import pandas as pd
+from exact_solution import get_exact_solution
 
 
 # objective function
@@ -52,37 +53,37 @@ def feasible_solution(x, demand):
     return y, z
 
 
-def neighbor(x, y, z, d, g):
+def neighbor(x, y, z, d, g, temp, t):
     x_new = x.copy()
     current_x_t = 0
     while current_x_t < 1:
         rand_period = randint(1, len(x) + 1)
         current_x_t = x[rand_period - 1]
     random_case = rand()
-    if random_case < 0.3 and temp < 0.3*start_temp:
+    if random_case < 0.3 and t < 0.3* temp:
         current_x_t2 = 0
         second_period = 0
         while current_x_t2 < 1 and rand_period != second_period:
             second_period = randint(1, len(x) + 1)
             current_x_t2 = x[second_period - 1]
         if rand_period > second_period: # forward production
-            max_forward = min(g-x[second_period], current_x_t2)
+            max_forward = min(g-x[second_period-1], current_x_t2)
             if max_forward > 0:
                 x_forward = randint(1, max_forward+1)
-                x_new[rand_period] = x[rand_period] - x_forward
-                x_new[second_period] = x[second_period] + x_forward
+                x_new[rand_period-1] = x[rand_period-1] - x_forward
+                x_new[second_period-1] = x[second_period-1] + x_forward
         else: # postpone production
-            max_postpone_production = min(g-x[second_period], x[rand_period])
-            max_postpone_demand = x[rand_period]
-            for t in range(rand_period, second_period+1):
+            max_postpone_production = min(g-x[second_period-1], x[rand_period-1])
+            max_postpone_demand = x[rand_period-1]
+            for t in range(rand_period-1, second_period):
                 demand_till_period = d[0:t].sum()
                 production_till_period = x[0:t].sum()
                 max_postpone_demand = min(production_till_period - demand_till_period, max_postpone_demand)
             max_postpone = min(max_postpone_demand, max_postpone_production)
             if max_postpone > 0:
                 x_postpone = randint(1, max_postpone + 1)
-                x_new[rand_period] = x[rand_period] - x_postpone
-                x_new[second_period] = x[second_period] + x_postpone
+                x_new[rand_period-1] = x[rand_period-1] - x_postpone
+                x_new[second_period-1] = x[second_period-1] + x_postpone
     if rand_period == len(x):
         max_postpone = 0
     else:
@@ -98,7 +99,7 @@ def neighbor(x, y, z, d, g):
     max_remove = min(current_x_t, max_forward + max_postpone)
     if max_remove > 0:
         remove_x_t = randint(1, max_remove + 1)
-        if temp > 5:
+        if t > 0.5*temp:
             case = rand()
             if case < 0.3:
                 remove_x_t = max_remove
@@ -152,8 +153,10 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
     checked_x.append(x_curr)
     # run the algorithm
     for i in range(n_iterations):
+        # calculate temperature for current epoch
+        t = temp * (0.8**i)
         # take a step
-        x_cand, y_cand, z_cand = neighbor(x_curr, y_curr, z_curr, d, g)
+        x_cand, y_cand, z_cand = neighbor(x_curr, y_curr, z_curr, d, g, temp, t)
         checked_x.append(x_cand)
         # evaluate candidate point
         candidate_eval = objective(x_cand, y_cand, z_cand, cp, cf, cs)
@@ -167,8 +170,7 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
             improvement_iterations.append(i)
         # difference between candidate and current point evaluation
         diff = candidate_eval - curr_eval
-        # calculate temperature for current epoch
-        t = temp * (0.8**i)
+        
         # calculate metropolis acceptance criterion
         metropolis = exp(-diff / t)
         # check if we should keep the new point
@@ -186,7 +188,7 @@ seed(0)
 n_iterations = 1000
 
 # initial temperature
-start_temp = 1
+t = 1
 temp = 1
 
 # cost of production in periods t
@@ -196,6 +198,11 @@ cs = asarray([1, 1, 1, 1, 1, 1])
 # demand per period t
 d = asarray([6, 7, 4, 6, 3, 8])
 g = 10
+
+# exact solution
+x_opt, obj_opt = get_exact_solution(cp, cf, cs, d, g)
+print(f'x opt: {np.round(x_opt,1)}')
+print(f'obj val: {obj_opt}')
 
 # perform the simulated annealing search
 best_score_per_seed = list()
