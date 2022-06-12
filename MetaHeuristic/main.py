@@ -60,7 +60,7 @@ def neighbor(x, y, z, d, g, temp, t):
         rand_period = randint(1, len(x) + 1)
         current_x_t = x[rand_period - 1]
     random_case = rand()
-    if random_case < 0.3 and t < 0.3* temp:
+    if random_case < 0.5 and t < 0.3* temp:
         current_x_t2 = 0
         second_period = 0
         while current_x_t2 < 1 and rand_period != second_period:
@@ -101,19 +101,19 @@ def neighbor(x, y, z, d, g, temp, t):
         remove_x_t = randint(1, max_remove + 1)
         if t > 0.5*temp:
             case = rand()
-            if case < 0.3:
+            if case < 0.01:
                 remove_x_t = max_remove
     else:
         remove_x_t = 0
     rand_case = rand()
-    if rand_case < 0.5:
+    if rand_case < 0.4:
         # postpone
         postpone_x = min(remove_x_t, max_postpone)
         x_new = postpone(x, postpone_x, rand_period, g, True)
         rest = remove_x_t - postpone_x
         if rest > 0:
             x_new = forward(x_new, rest, rand_period, g, True)
-    elif rand_case < 1:
+    elif rand_case < 0.7:
         # forward
         forward_x = min(remove_x_t, max_forward)
         x_new = forward(x, forward_x, rand_period, g, True)
@@ -154,7 +154,7 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
     # run the algorithm
     for i in range(n_iterations):
         # calculate temperature for current epoch
-        t = temp * (0.8**i)
+        t = temp * (0.99**i)
         # take a step
         x_cand, y_cand, z_cand = neighbor(x_curr, y_curr, z_curr, d, g, temp, t)
         checked_x.append(x_cand)
@@ -169,7 +169,7 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
             best_scores.append(best_eval)
             improvement_iterations.append(i)
         # difference between candidate and current point evaluation
-        diff = candidate_eval - curr_eval
+        diff = (candidate_eval - curr_eval)
         
         # calculate metropolis acceptance criterion
         metropolis = exp(-diff / t)
@@ -182,22 +182,36 @@ def simulated_annealing(cp, cf, cs, d, g, n_iterations, temp):
 
 
 # seed the pseudorandom number generator
-seed(0)
+seed(1)
 
 # define the total iterations
 n_iterations = 1000
 
-# initial temperature
-t = 1
-temp = 1
-
-# cost of production in periods t
+# # cost of production in periods t
 cp = asarray([3, 4, 3, 4, 4, 5])
 cf = asarray([12, 15, 30, 23, 19, 45])
 cs = asarray([1, 1, 1, 1, 1, 1])
 # demand per period t
 d = asarray([6, 7, 4, 6, 3, 8])
 g = 10
+
+# random problem generator 
+
+#seed(0)
+# g = randint(10, 30)
+# periods = randint(4, 13)
+# d = randint(5, g * 0.8, size=periods)
+# cp = randint(3, 6, size=periods)
+# cf = randint(10, 50, size=periods)
+# cs = randint(1, 3, size=periods)
+# print(f'g: {g}')
+# print(f'd: {d}')
+# print(f'cp: {cp}')
+# print(f'cf: {cf}')
+# print(f'cs: {cs}')
+
+# initial temperature
+temp = exp(len(d)/12)
 
 # exact solution
 x_opt, obj_opt = get_exact_solution(cp, cf, cs, d, g)
@@ -207,12 +221,14 @@ print(f'obj val: {obj_opt}')
 # perform the simulated annealing search
 best_score_per_seed = list()
 iterrations_for_best_per_seed = list()
+scores_list = list()
 
 for i in range(100):
     seed(i)
     best_x, best_y, best_z, score, best_scores, scores, checked_scores, checked_x, improvement_iterations = simulated_annealing(cp, cf, cs, d, g, n_iterations, temp)
     best_score_per_seed.append(score)
     iterrations_for_best_per_seed.append(improvement_iterations[-1])
+    scores_list.append(scores)
     print('Done!')
     print(f'x:{best_x}, y: {best_y}, z:{best_z}')
     print(f'score: {score}')
@@ -220,9 +236,21 @@ for i in range(100):
 print(f'Best average: {np.mean(best_score_per_seed)}')
 print(f'Max score: {max(best_score_per_seed)}')
 print(f'Iterations average: {np.mean(iterrations_for_best_per_seed)}')
+df = pd.DataFrame({'Score': best_score_per_seed,
+                 'Iterrations':iterrations_for_best_per_seed})
+df.to_csv('Scores.csv')
 
 
 # print('f(%s) = %f' % (best_x, best_y, best_z, score))
+
+# line plot of scores for 10 iterrations
+pyplot.figure()
+for l in scores_list[0:10]:
+    pyplot.plot(range(len(l)), l)
+pyplot.xlabel('Iterration')
+pyplot.ylabel('Objective Value')
+pyplot.tight_layout()
+pyplot.savefig('BestObjValesPlot.png')
 
 # line plot of best scores
 pyplot.figure()
