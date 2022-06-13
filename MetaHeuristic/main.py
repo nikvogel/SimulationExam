@@ -61,13 +61,14 @@ def neighbor(x, y, z, d, g, temp, t):
         current_x_t = x[rand_period - 1]
     random_case = rand()
     if random_case < 0.5 and t < 0.3* temp:
+    #if random_case < 0.5:
         current_x_t2 = 0
         second_period = 0
         while current_x_t2 < 1 and rand_period != second_period:
             second_period = randint(1, len(x) + 1)
             current_x_t2 = x[second_period - 1]
         if rand_period > second_period: # forward production
-            max_forward = min(g-x[second_period-1], current_x_t2)
+            max_forward = min(g-x[second_period-1], x[rand_period-1])
             if max_forward > 0:
                 x_forward = randint(1, max_forward+1)
                 x_new[rand_period-1] = x[rand_period-1] - x_forward
@@ -99,10 +100,6 @@ def neighbor(x, y, z, d, g, temp, t):
     max_remove = min(current_x_t, max_forward + max_postpone)
     if max_remove > 0:
         remove_x_t = randint(1, max_remove + 1)
-        if t > 0.5*temp:
-            case = rand()
-            if case < 0.01:
-                remove_x_t = max_remove
     else:
         remove_x_t = 0
     rand_case = rand()
@@ -214,9 +211,20 @@ g = 10
 temp = exp(len(d)/12)
 
 # exact solution
-x_opt, obj_opt = get_exact_solution(cp, cf, cs, d, g)
+x_opt, z_opt, obj_opt = get_exact_solution(cp, cf, cs, d, g)
 print(f'x opt: {np.round(x_opt,1)}')
 print(f'obj val: {obj_opt}')
+
+# plot of solution
+pyplot.figure()
+pyplot.plot(range(1,7), x_opt, label='Production')
+pyplot.plot(range(1,7), z_opt, label= 'Storage')
+pyplot.plot(range(1,7), d, label = 'Demand')
+pyplot.ylabel('Amount')
+pyplot.xlabel('Period')
+pyplot.legend()
+pyplot.tight_layout()
+pyplot.savefig('PlotSolutionGurobi.png')
 
 # perform the simulated annealing search
 best_score_per_seed = list()

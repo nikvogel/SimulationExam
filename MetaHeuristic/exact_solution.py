@@ -36,4 +36,4 @@ def get_exact_solution(cp, cf, cs, d, g):
         y_star.append(y[t].x)
         z_star.append(z[t].x)
 
-    return x_star, obj_value
+    return x_star, z_star, obj_value
